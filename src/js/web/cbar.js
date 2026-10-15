@@ -178,11 +178,14 @@ var fsButton = new ToggleImageButton("Fullscreen", fsImgSrc, "Exit Fullscreen", 
 fsButton.onClick = function () { Video.isFullscreen() ? Video.exitFullScreen() : Video.fullScreen();  }
 groupEnd.addChild(fsButton);
 
+var controlsEnabled = true;
+
 function init(event) {
   var controls = document.getElementById("js7800__controls");
   if (event && event.controls === false) {
     // Embedded mode: leave the controls bar empty (and out of the layout)
     controls.style.display = "none";
+    controlsEnabled = false;
     return;
   }
   var controlsContainer = document.createElement("div");
@@ -210,6 +213,7 @@ function isPauseButtonDown() {
 }
 
 function onCartridgeLoaded() {
+  if (!controlsEnabled) return;
   pauseButton.setValue(false);  
 }
 
@@ -219,10 +223,10 @@ Events.addListener(
   new Events.Listener("onCartridgeLoaded", onCartridgeLoaded));
 Events.addListener(
   new Events.Listener("onLeftDiffChanged", 
-  function (val) { leftDiffSwitch.setValue(!val); }));
+  function (val) { if (controlsEnabled) leftDiffSwitch.setValue(!val); }));
 Events.addListener(
   new Events.Listener("onRightDiffChanged",
-  function (val) { rightDiffSwitch.setValue(!val); }));
+  function (val) { if (controlsEnabled) rightDiffSwitch.setValue(!val); }));
 
 export {
   isPauseButtonDown,
