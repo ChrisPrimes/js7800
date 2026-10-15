@@ -317,10 +317,9 @@ function init(id, props) {
     addElements(id);
 
     debug = false;
-    if (props) {
-      if (props.debug) {
-        debug = props.debug;
-      }
+    var options = props || {};
+    if (options.debug) {
+      debug = options.debug;
     }
 
     // Fire init event
@@ -331,12 +330,20 @@ function init(id, props) {
       controlsDiv: controlsDiv,
       keyboardData: keyboardData,
       Region: Region,
-      debug: debug
+      debug: debug,
+      // Embedding options (all optional):
+      //   controls: false     - do not create the controls bar
+      //   keymap: { ... }     - default keyboard mappings (see kb.js)
+      controls: options.controls !== false,
+      keymap: options.keymap
     });
 
     // Description
     descriptionDiv = document.createElement("div");
     logoDiv.appendChild(descriptionDiv);
+    if (options.description === false) {
+      descriptionDiv.style.display = "none";
+    }
 
     Video.startScreenSnow();
     logoDiv.classList.add('js7800__logo--show');

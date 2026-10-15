@@ -178,8 +178,13 @@ var fsButton = new ToggleImageButton("Fullscreen", fsImgSrc, "Exit Fullscreen", 
 fsButton.onClick = function () { Video.isFullscreen() ? Video.exitFullScreen() : Video.fullScreen();  }
 groupEnd.addChild(fsButton);
 
-function init() {
+function init(event) {
   var controls = document.getElementById("js7800__controls");
+  if (event && event.controls === false) {
+    // Embedded mode: leave the controls bar empty (and out of the layout)
+    controls.style.display = "none";
+    return;
+  }
   var controlsContainer = document.createElement("div");
   controlsContainer.className = "js7800__controls-container";
   controls.appendChild(controlsContainer);

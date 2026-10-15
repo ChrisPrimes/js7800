@@ -1,3 +1,4 @@
+import { Keys } from "./keys.js"
 import * as Video from "./video.js"
 import * as Cartridge from "../prosystem/Cartridge.js"
 import * as Events from "../events.js"
@@ -27,6 +28,15 @@ var KeyboardMapping = function (leftKey, rightKey, upKey, downKey, b1Key, b2Key)
   var upLast = false;
 
   return {
+    /** Sets new defaults (and current values) from a partial mapping */
+    setDefaults: function(m) {
+      if (m.left != null) { leftKey = defLeftKey = m.left; }
+      if (m.right != null) { rightKey = defRightKey = m.right; }
+      if (m.up != null) { upKey = defUpKey = m.up; }
+      if (m.down != null) { downKey = defDownKey = m.down; }
+      if (m.button1 != null) { b1Key = defB1Key = m.button1; }
+      if (m.button2 != null) { b2Key = defB2Key = m.button2; }
+    },
     getDefaultLeft: function() { return defLeftKey; },
     getLeft: function() { return leftKey; },
     setLeft: function(c) { leftKey = c; },    
@@ -198,7 +208,48 @@ function keyEvent(event, down) {
   }
 }
 
-function init() {
+/** Converts a key code (number) or key name (see Keys) to a key code */
+function toKeyCode(key) {
+  if (typeof key === "number") {
+    return key;
+  }
+  var name = String(key).toLowerCase();
+  for (var code in Keys) {
+    if (Keys[code].toLowerCase() === name) {
+      return parseInt(code, 10);
+    }
+  }
+  throw "Unknown key: " + key;
+}
+
+/**
+ * Applies the "keymap" init option, e.g.
+ * { p1: { button1: "Space", button2: "Shift" }, p2: {...},
+ *   select: "F2", reset: "F3", pause: "F4" }
+ */
+function applyKeymap(keymap) {
+  if (!keymap) {
+    return;
+  }
+  ["p1", "p2"].forEach(function (player) {
+    var m = keymap[player];
+    if (!m) {
+      return;
+    }
+    var codes = {};
+    Object.keys(m).forEach(function (action) {
+      codes[action] = toKeyCode(m[action]);
+    });
+    (player === "p1" ? p1KeyMap : p2KeyMap).setDefaults(codes);
+  });
+  if (keymap.select != null) { selectKey = defSelectKey = toKeyCode(keymap.select); }
+  if (keymap.reset != null) { resetKey = defResetKey = toKeyCode(keymap.reset); }
+  if (keymap.pause != null) { pauseKey = defPauseKey = toKeyCode(keymap.pause); }
+}
+
+function init(event) {
+  applyKeymap(event && event.keymap);
+
   document.onkeydown =
     function (event) {
       keyEvent(event, true);
