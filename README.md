@@ -43,6 +43,31 @@ JS7800 includes integrated documentation via the "Help/Information" button locat
 
 For information on the ["cartridge list"](https://github.com/raz0red/js7800/wiki/Cartridge%20Lists) format,  [request parameters](https://github.com/raz0red/js7800/wiki/Request%20Parameters), and more, refer to the [JS7800 Wiki](https://github.com/raz0red/js7800/wiki).
 
+## Embedding
+
+JS7800 can be embedded in your own page without the demo site (cartridge list,
+dialogs, etc.). Include `js7800.min.js`, then:
+
+```js
+js7800.Main.init('target-element-id', {
+  controls: false,       // do not create the controls bar (default: true)
+  description: false,    // hide the "load a cartridge" text (default: true)
+  keymap: {              // override default keys (key codes or names)
+    p1: { left: 'Left', right: 'Right', up: 'Up', down: 'Down',
+          button1: 'Space', button2: 'Shift' },
+    select: 'F2', reset: 'F3', pause: 'F4'
+  }
+});
+js7800.Main.startEmulation(romBytes); // array of byte values
+```
+
+Key names are those listed in `src/js/web/keys.js` (e.g. `Space`, `Enter`, `Z`,
+`F2`); numeric key codes are also accepted. All options are optional.
+
+## Building
+
+Requires Node 18+ (tested with Node 24). `npm install && npm run build`.
+
 ## Change log
 
 ### 01/25/24 (0.0.9)

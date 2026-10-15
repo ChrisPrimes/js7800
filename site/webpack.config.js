@@ -10,9 +10,11 @@ module.exports = {
   output: {
     filename: '[name].js',
     path: path.resolve(__dirname, 'dist'),
-    library: 'site',
-    libraryTarget: 'umd',
-    umdNamedDefine: true
+    library: {
+      name: 'site',
+      type: 'umd',
+      umdNamedDefine: true
+    }
   },
   module: {
     rules: [
@@ -22,21 +24,18 @@ module.exports = {
       },
       {
         test: /\.(rom)$/i,
-        use: [
-          {
-            loader: 'url-loader',
-          },
-        ],
+        type: 'asset/inline',
+        generator: { dataUrl: { mimetype: 'application/octet-stream' } },
       },
       {
         test: /\.(png|jp(e*)g|svg|gif)$/,
-        use: [{
-          loader: 'url-loader',
-          options: {
-            limit: 8192, // Convert images < 8kb to base64 strings
-            name: 'images/[hash]-[name].[ext]'
-          }
-        }]
+        type: 'asset',
+        parser: {
+          dataUrlCondition: { maxSize: 8192 } // Inline images < 8kb as base64
+        },
+        generator: {
+          filename: 'images/[hash]-[name][ext]'
+        }
       }
     ],
   },
@@ -49,8 +48,8 @@ module.exports = {
     ]
   },
   devServer: {
-    contentBase: path.join(__dirname, 'deploy'),
-    publicPath: '/js/',
+    static: { directory: path.join(__dirname, 'deploy') },
+    devMiddleware: { publicPath: '/js/' },
     compress: true,
     port: 8000
   },
