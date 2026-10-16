@@ -13,7 +13,19 @@ var mixbuffer = new Array(SOUNDBUFSIZE);
 var mixhead = 0;
 var mixtail = 0;
 
+/** Max queued samples (~130ms) before playback skips ahead to stay in sync */
+var MAX_BACKLOG = 4096;
+/** Queued samples (~65ms) to keep when skipping ahead */
+var TARGET_BACKLOG = 2048;
+
 function storeSound(sample, ym, length) {
+  // Browsers keep audio suspended until user interaction. Don't queue samples
+  // in the meantime, or they play back late (delayed) once audio resumes.
+  if (audioCtx && audioCtx.state !== 'running') {
+    mixhead = mixtail = 0;
+    return;
+  }
+
   for (var i = 0; i < length; i++) {
 
     mixbuffer[mixhead++] = ym ? (((sample[i]/255) + (ym[i]/128)) / 2) : (sample[i]/255);
@@ -45,6 +57,12 @@ function init() {
       var dst = e.outputBuffer.getChannelData(0);
       var done = 0;
       var len = dst.length;
+      var backlog = mixhead - mixtail;
+      if (backlog < 0) backlog += SOUNDBUFSIZE;
+      if (backlog > MAX_BACKLOG) {
+        // Playback fell behind (e.g. tab throttled); drop old audio to catch up
+        mixtail = (mixhead - TARGET_BACKLOG + SOUNDBUFSIZE) % SOUNDBUFSIZE;
+      }
       while ((mixtail != mixhead) && (done < len)) {
         dst[done++] = mixbuffer[mixtail++];
         if (mixtail == SOUNDBUFSIZE)
