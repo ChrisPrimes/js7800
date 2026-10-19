@@ -2,7 +2,7 @@ const TerserPlugin = require('terser-webpack-plugin');
 const path = require('path');
 const fs = require('fs');
 
-module.exports = {
+const umd = {
   entry: {
     "js7800.min": "./src/js/index.js"
   },
@@ -72,3 +72,23 @@ module.exports = {
     }
   ]
 };
+
+// ES module build for `import` consumers (bundlers and native modules)
+const esm = {
+  ...umd,
+  entry: { "js7800.esm": "./src/js/index.js" },
+  experiments: { outputModule: true },
+  output: {
+    filename: '[name].js',
+    path: path.resolve(__dirname, 'dist'),
+    library: { type: 'module' }
+  },
+  optimization: {
+    minimize: true,
+    minimizer: [new TerserPlugin({ test: /\.esm\.js$/ })]
+  },
+  devServer: undefined,
+  plugins: []
+};
+
+module.exports = [umd, esm];

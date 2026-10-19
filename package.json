@@ -5,7 +5,16 @@
   "homepage": "https://github.com/raz0red/js7800",
   "author": "raz0red",
   "license": " GPL-2.0",
-  "main": "src/js/index.js",
+  "main": "dist/js7800.min.js",
+  "module": "dist/js7800.esm.js",
+  "exports": {
+    ".": {
+      "import": "./dist/js7800.esm.js",
+      "require": "./dist/js7800.min.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": ["dist"],
   "repository": {
     "type": "git",
     "url": "git://github.com/raz0red/js7800.git"
