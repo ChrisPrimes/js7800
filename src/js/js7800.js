@@ -47,6 +47,9 @@ var skipLevel = SKIP_LEVEL_DEFAULT;
 var fskip = 0;
 var fskipcount = 0;
 
+/** Optional callback invoked before every emulated frame (see setFrameHook) */
+var frameHook = null;
+
 var errorHandler = function (message) {
   alert(message);
 }
@@ -139,6 +142,7 @@ function startEmu(cart, isRestart) {
     var isPaused = ProSystem.IsPaused;
     var fs = 0;
     var avgWait = 0;
+    var frameNumber = 0; // frames emulated since the last reset
 
     // Enable mouse tracking if lightgun game
     Mouse.enableMouseTracking(Cartridge.IsLightGunEnabled());
@@ -151,7 +155,11 @@ function startEmu(cart, isRestart) {
 
         if (!isPaused()) {
           updateInput();
+          if (frameHook) {
+            frameHook(keyboardData, frameNumber);
+          }
           executeFrame(keyboardData);
+          frameNumber++;
 
           // Frame skipping
           if ((fskip == 0) || (fs >= fskip)) {
@@ -389,6 +397,18 @@ function setHighScoreCallback(cb) {
   Events.fireEvent("highScoreCallbackChanged", highScoreCallback);
 }
 
+/**
+ * Sets a callback invoked immediately before each emulated frame, after input has
+ * been polled. It receives the input array that is about to be emulated and the
+ * number of frames emulated since the last (re)start (0 on the first frame of a
+ * run). Because the emulation is deterministic, the cartridge plus this per-frame
+ * input sequence is sufficient to replay a session exactly. The input array is
+ * reused between frames, so copy it if it needs to be retained. Pass null to clear.
+ */
+function setFrameHook(cb) {
+  frameHook = cb;
+}
+
 function isVsyncEnabled() {
   return vsync;
 }
@@ -468,6 +488,7 @@ export {
   restart,
   setErrorHandler,
   setHighScoreCallback,
+  setFrameHook,
   HighScoreCallback,
   descriptionDiv,
   isVsyncEnabled,
